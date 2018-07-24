@@ -1,0 +1,303 @@
+Kurzbeschreibung der Userstory: 
+Der Ausbauplaner möchte automatisch die Fasern der HK-Linie in den GF-Kassetten der strategischen Muffen und Abzweigmuffen der Ausbauplanung verbunden und abgelegt bekommen.
+Historie / Istzustand: 
+
+
+
+Beschreibung von konkreten Anforderungen zu der Userstory 
+Nach der Übernahme der Daten aus der Gebietsplanung sind 
+die Trassenobjekte, 
+die GF-Kabel,
+die Muffen ,
+die Faserbedarfe für den NVT (Faser die für alles hinter dem NVT benötigt werden)
+
+Achtung: Wenn ein NVT einen ungeraden Faserbedarf besitzt, wird dieser immer für die Durchspleißung (wegen EMK-Kassetten)  auf die nächst höhere gerade Zahl geändert.
+Beispiel. Wenn der Faserbedarf an einem NVt von der Gebietsplanung 7 ist, wird ein Faserbedarf von 8 vom Central Office zum NVT durchverspleißt.
+.
+
+
+Für die weitere Verspleißung ( Reserven , Muffennummern, ..) ist der HK-Strang und die Nebenstränge zu ermitteln.
+Der Hauptstrang ist der Weg zu der am weitesten entfernteste Muffe (Trassenlänge) führt. 
+
+Anmerkung: Von der Gebietsplanung wird aktuell für den Hauptstrang immer durchgehend ein 96 fasriges Kabel geliefert.
+
+ 
+Waserfaser im HK ausgehend vom Central-Office über jede Muffe zurück zum Central Office führen. 
+Vom Central Office geht eine Faser über alle Stränge und deren Muffen und wieder zurück zum Central Office. Die Faser 1 und Faser 2 jedes Kabels sind für die Messung des Wassereinflusses vorgesehen. In jeder Muffe befindet sich auf Platz 1.1 (<Seite>.<Nummer>) eine Wasserkassette die ein Schwamm auf dem Ablageplatz besitzt, der die Faser bei Wassereinfluss biegt, was dann im Central Office gemessen werden kann.
+
+Verbindung der Wasserfaser in den Muffen:
+Aus dem Central Office ist die Faser 1 nacheinander in jeden Nebenstrang zu führen und an der letzten Muffe des Nebenstrangs wieder über die Faser 2 zurück zum Hauptstrang. Von der letzten Muffe des Hauptstrangs ist die Faser 1 wieder über die Faser 2 zurück in den Central Office zu führen.
+
+
+
+
+Ablage der Wasserfaser in einer Muffe.
+Wenn aus Richtung Central Office an der Muffe 
+
+die Faser 1 auf Faser 1 weiter geht, dann wird diese in der Kassette 1.1 (Wasserkassette mit Schwamm) auf Ablageplatz 1 abgelegt
+die Faser 1 auf Faser 2 weitergeht (Ende des Strangs) wird diese ebenfalls in der Kassette 1.1 (Wasserkassette mit Schwam) auf Ablageplatz 1 abgelegt
+die Faser 2 auf die Faser 2 weiter geht wird diese in der Kassette 1.3 auf Ablageplatz 2 abgelegt.
+die Faser 2 auf Faser 1 geht (Rückführung in den Hauptstrang) wird diese in der Kassette 1.3 auf Ablageplatz 1 abgelegt.
+
+Im Zuge der Übernahme aus der Gebietsplanung sind die Verbindungen der Wasserfaser wie beschrieben herzustellen und in den GF-Kassetten abzulegen
+
+
+Faserbedarfe von den NVT’s /Strategischen Muffen  zum Central Office führen 
+
+Verbindung der Faserbedarfe für NVT oder Strategische Muffen 
+Vom Central Office in den ersten Nebenstrang gehen und von dem ersten Bedarfspunkt (NVT oder Strategische Muffe)  die Faserbedarfe zum Central Office führen. 
+Hierbei wird von „der ersten Muffe vor dem NVT“  oder der Strategischen Muffe die nächsten freien Faser am Beginn des Nebenstrangs für die Verspleißung verwendet.
+Wenn es sich bei dem Bedarfspunkt um einen Strategische Muffe handelt, werden die Faser für den Bedarf an dieser Muffe dort hin geführt, jedoch noch nicht geschnitten. Die Fasern werden bis zum Ende der Nebenstrecke weitergeführt. 
+Anmerkung: Die Faser 1- 2 des Nebenstranges bis zur NVT-Stichkabel wurden bereits zuvor für die Wasserfaser verwendet.
+
+
+
+Danach zum nächsten Bedarfspunkt (hier NVT) in dem Nebenstrang gehen und von dort ebenfalls die Faserbedarfe zum Central Office verbinden. 
+Hierbei wird von der ersten Muffe vor dem NVT die nächsten freien Faser am Beginn des Nebenstrangs für die Verspleißung verwendet.
+Anmerkung: Ein Nebenstrang hat für alle Kabel bis zu den Stichkabel, welches zum NVT gehen, immer die gleiche Anzahl an Faser.
+An der Muffe vom Nebenstrang zum Hauptstrang wird die nächste freie Faser des HK-Kabels zum Central Office verbunden.
+
+
+c) Danach zum den nächsten Nebenstrang gehen und dies analog wie beim ersten Nebenstrang durchführen
+
+
+Danach zum nächsten NVT im Hauptstrang gehen und von dort ebenfalls die Faserbedarfe zum Central Office verbinden.
+Hierbei wird von der ersten Muffe vor dem NVT die nächsten freien Faser am Beginn des HK-Stranges am Central Office bis  zum Central Office durch  verbunden
+
+
+
+
+
+
+
+
+
+
+
+
+
+Ablage der Faser für NVT -  oder Strategische Muffen-Bedarfe in einer Muffe.
+
+Der Aufbau der Muffen ist generell immer wie folgt
+
+
+Seite 1
+Kassetten-Nummer (Pos)
+Typ
+
+
+Ablageplätze
+Bemerkung
+1
+WSK
+1 -2
+Nur für Wasserfaser zur Messung 
+2
+MMK
+1-12
+Nur als Reserve für Reperaturmaßnahme
+3
+EMK
+1-4
+Wird nur für die Rückführung der Wasserfaser verwendet
+4 -x
+EMK
+4
+Zum Verbinden von Fasern
+(x ist abhängig von der Größe der Muffe)
+Seite 2
+1
+MMK
+1-12
+Nur als Reserve für Reperaturmaßnahme
+2
+MMK
+1-12
+Nur als Reserve für Reperaturmaßnahme
+3 -y
+EMK
+4
+Zum Verbinden von Fasern wenn alle EMK der Seite 1 belegt sind
+(y ist abhängig von der Größe der Muffe
+
+Hier gilt folgende Standardablage für Faser von ankommende Gf-Kabel
+
+Die von dem Central Office an den Muffen ankommenden Faser für die NVT-oder Strategischen Muffe-Bedarfe werden immer wie folgt in den EMK- Kassetten auf Ablageplatz 1 und 2 abgelegt.
+Die Faser eines Gf- Kabel werden auf beide Seiten der Muffe aufgeteilt,  damit diese gleichmäßiger ohne Sprünge verknüpft werden kann und damit zwei Monteure gleichzeitig spleißen können
+Die Hälte der ankommenden Fasern werden auf der Seite 1 auf Kassetten abgelegt und die andere Hälfte auf Seite 2
+
+
+Auf der Seite 1:
+1) Faser 3 => immer in der Kassette 4 der Seite 1  auf Ablageplatz 1
+2) Faser 4 => immer in der Kassette 4 der Seite 1  auf Ablageplatz 2
+3) Faser 5 => immer in der Kassette 5 der Seite 1  auf Ablageplatz 1
+4) Faser 6 => immer in der Kassette 5 der Seite 1  auf Ablageplatz 2
+…..
+e) Faser < Gesamtfaseranzahl der Kabels /2> => ….
+
+
+Auf der Seite 2
+Faser < Gesamtfaseranzahl der Kabels /2> +1 => EMK-Kassette 3 der Seite 2 auf Ablageplatz 1 und 2
+g) Danach werden jeweils die nächsten zwei Faser auf die Ablageplätze 1 und 2 der nächsten Kassette auf der Seite 2 ablegen.
+
+
+GF-Kabel
+Anzahl Faser
+Faser Seite 1
+Faser Seite 2
+Muffe
+12/69S/A-D(ZN)2Y/1*12/40795031/Minikabel
+12
+1-6
+7-12
+EMMuffe -Hk-48/Vzk-24/40269306
+24/69S/A-D(ZN)2Y/2*12/40795074/Minikabel
+24
+1-12
+13-24
+EMMuffe -Hk-48/Vzk-24/40269306
+36/69S/A-D(ZN)2Y/3*12/40374467/Minikabel
+36
+1-18
+19 - 36
+EMMuffe -Hk-48/Vzk-24/40269306
+48/69S/A-D(ZN)2Y/4*12/40795076/Minikabel
+48
+1-24
+25-48
+EMMuffe -Hk-48/Vzk-24/40269306
+60/62S/A-D(ZN)2Y/5*12/40247660/Minikabel
+60
+1-30
+31-60
+EMMuffe -HK-96/VZK-48
+72/69S/A-D(ZN)2Y/6*12/40795078/Minikabel
+72
+1-36
+37-72
+EMMuffe -HK-96/VZK-48
+96/66S/A-D(ZN)2Y/8*12/40291501/Minikabel   
+96
+1-48
+49 -96
+EMMuffe -HK-96/VZK-48
+
+
+
+In der folgende Excel-Tabelle ist als Beispiel für die initiale Faserablage der ankommenden Faser von Gf-Kabel mit verschiedenen Faseranzahlen auf die Seiten einer Muffe vom Typ „EMMuffe -HK-96/VZK-48/40205811“ dargestellt.
+
+
+
+Reservefaser vom Central Office die nicht für NVT-Faserbedarfe verwendet werden bis zur letzten Muffe des HK-Stranges führen
+
+Alle Faser die von einem Central Office aus, im HK-Kabel los gehen und nicht auf einen konkreten Bedarfspunkt führen, sind Reservefaser und werden zur  letzten Muffe des Hauptstrangs durch verbunden. 
+Im unteren Bild startet ein 96 Kabel vom Central Office und die Faser 1 – 77 des am Central Office startende HK-Kabel werden zu konkrete Bedarfspunkte durchverbunden. Die Faser 78 -96 sind somit Reserven und werden zur letzten Muffe des Hauptstrangs verbunden. 
+
+
+Ablage der Reservefaser in einer Muffe
+
+Die  Ablage der ankommenden Reservefaser in einer Muffe in Kassetten erfolgt wie die Standardablage von ankommenden Faser bei NVT-Bedarfe unter Punkt 2. Man könnte auch sagen, dass an der letzten Muffe im HK-Strang ein Reservebedarf von 18 Fasern besteht.
+
+Verbinden und Ablegen von toten Faser 
+
+a) Ablage der toten Faser in der Stichmuffe
+
+
+
+Die toten Fasern werden versucht auf die gleiche Seite der Kassette abzulegen, wie bereits die im gleichen GF-Kabel befindlichen anderen Fasern, welche bis zum Central Office durchverbunden wurden.
+Beispiel: Die Fasern 1 -6 des Stichkabels zum NVT, wurden auf die ankommenden Fasern 5-10 verspleißt, welche nach den oben in Punkt 2 beschriebenen Regeln  auf die Seite 1 abgelegt wurden. 
+=> Die 6 tote Fasern des Stichkabels sind somit auch auf Seite 1 der Stichmuffe abzulegen.
+Regel:
+Auf Seite 1: Ankommende Faser 1 – <Gesamtfaseranzahl /2)
+Auf Seite 2: Ankommende Faser <Gesamtfaseranzahl /2 +1> - <Gesamtfaseranzahl>
+
+
+Die toten Fasern eines Stichkabels werden auf MMK-Kassetten abgelegt. Hierfür wird zuerst auf dieser Seite eine neue MMK-Kassette erzeugt, wo die Fasern abzulegen sind. 
+
+
+
+Auf eine MMK-Kassette können maximal 12 tote Faser abgelegt werden. Falls mehr als 12 Faser abzulegen sind,  werden weitere MMK- Kassette eingebaut. Die erste MMK-Kassette die man einbaut erhält die Nummer <Seite>.99  (Z.B. 1.99), die Zweite die Nummer <Seite>.98 die Dritte die Nummer <Seite>.97 usw.
+
+
+Wie viele MMK-Kassette auf eine Seite passen, berechnet man wie folgt:
+
+Aus der Muffenspezifikation wird die max. Rasteranzahl je Seite ermittelt
+Anmerkung: Eine MMK und eine WSK Kassette benötigen vom Platz 2 Rasterplätze. Eine EMK benötigt vom Platz 1 Rasterplatz.
+  
+Je Seite wird die max. einzubringende MMK-Kassetten wie folgt ermittelt
+Seite 1 : 
+Freie Raster = Max. Anzahl Rasterplätze je Seite  – 2 Raster (WSK) – 2 Raster (MMK Reparatur) – 1 Raster EMK (Rückführung Wasserkassette) -  Gesamtfaseranzahl des Kabels /2 * 1 Raster je vorhandene EMK-Kassette auf der Seite
+=> Max. neu einzubauende MMK-Kassetten = Freie Raster / 2
+
+Seite 2: 
+Freie Raster = Max. Anzahl Rasterplätze – 4 Raster ( 2 MMK Reparatur) –-  Gesamtfaseranzahl des Kabels /2 1 Raster je vorhandene EMK-Kassette auf der Seite
+
+Max. neu einzubauende MMK-Kassetten = Freie Raster / 2
+
+Falls auf die vorgesehene Seite der Muffe keine MMK mehr passt, wird die andere Seite verwendet
+
+Achtung: Es gibt Muffentemplates wo mehr EMK-Kassetten vorhanden sind, als man für die Ablage der ankommenden Fasern benötigt. Diese freien EMK-Kassetten auf die keine Faser abgelegt wurden, sind wenn keine anderen freien Rasterplätze für neue MMK-Kassetten mehr vorhanden sind, gegen eine MMK auszutauschen. D.h. es würden zwei nicht genutzte EMK entfernt und dafür eine MMK eingebaut.
+
+
+
+Anmerkung: Im ersten Ansatz würden wir die bestehenden EMK noch nicht automatisch austauschen. Es würe ein Infoflag erzeugt, der auf nicht abgelegte tote Fasern wegen fehlendem Platz für MMK hinweist . Der Anwender müsste für diesen extrem seltenen Fall dann die EMK gegen MMK manuell austauschen und die Faser ablegen.
+b) Ablage von toten Fasern eines Gf-Kabels auf einer Muffe an der außer dem Stichkabel zum NVT kein weiteres Kabel endet.
+
+
+Hier gilt die Standardfaserablage für ankommende Gf-Kabel, wie unter Punkt 2 für NVT Bedarfe beschrieben.
+Beispiel: Die Faser 3 würde immer auf dem Ablageplatz 1 der  GF-Kassette 4 auf Seite 1 abgelegt usw. (Details siehe unter Punkt 2) 
+
+
+c) Ablage von toten Fasern eines Gf-Kabels auf einer Muffe an der, außer ggf. dem Stichkabel zum NVT, noch genau ein weiteres Kabel endet.
+
+Wenn die gleiche Faser des ankommenden Gf-Kabel und des abgehende Gf-Kabel an der Muffe endet, werden diese durchverbunden und die Faser wie bei der Standardfaserablage für ankommende Gf-Kabel, wie unter Punkt 2 für NVT Bedarfe beschrieben, abgelegt.
+Beispiel: Die Faser 19 des ankommenden Gf-Kabels würde immer auf dem Ablageplatz 1 der  GF-Kassette 12 auf Seite 1 abgelegt usw. (Details siehe unter Punkt 2) 
+
+
+Wenn nur auf einem GF-Kabel die Faser endet (z.B. 3- 10) und auf dem GF-Kabel der anderen Seite die gleichen Fasern (3- 10) bereits durchverbunden und abgelegt sind, dann werden die endenden Fasern auf die Ablageplätze 3 – 4 der Gf-Kassetten abgelegt, wo die gleiche ankommenden Faser bereits weiter verbundenen auf Ablageplatz 1 und 2 abgelegt wurden. 
+Im unteren Beispiel würden die tote Fasern 3 auf den Ablageplatz 3 der  GF-Kassette 4 auf Seite 1 abgelegt, die tote Faser 4 auf Ablageplatz 4 der GF Kassette 4, usw. 
+
+
+d) Ablage von toten Fasern eines Gf-Kabels auf einer Muffe an der, außer ggf. dem Stichkabel zum NVT, noch mehr als ein weiteres Kabel endet.
+
+Wenn  3 oder mehr Gf-Kabel (Stichkabel zum NVT abgezogen) an einer Muffe ankommen, wird 
+die tote Faser des HK-Kabelstrangs  auf die Ablageplätze 3 – 4 der Gf-Kassetten abgelegt, wo die gleiche ankommenden Faser des Hauptstrangs bereits weiter verbundenen auf Ablageplatz 1 und 2 abgelegt wurden. 
+Im unteren Beispiel würden die tote Fasern 3 auf den Ablageplatz 3 der  GF-Kassette 4 auf der Seite 1 abgelegt, die tote Faser 4 auf Ablageplatz 4 der GF Kassette 4, usw.  bis 18
+
+die tote Faser des Nebenstrangs auf neue MMK-Kassetten abgelegt.
+Dies geschieht wie bei Stichkabel zum NVT unter Punkt 3 beschrieben.
+
+
+  Hier noch eine Darstellung aller toten Faser des Beispielnetzes:
+
+
+
+
+
+Umgang mit Unternebenstränge in Nebenstränge.
+In der Regel wird es von HK-Hauptstrang nur Nebenstränge ohne weitere Aufteilung der Nebenstränge in Unternebenstränge geben, da eine weiter Staffelung mehr Muffen benötigt, was teurer würde.
+Es ist aber nicht komplett ausgeschlossen, dass in der Gebietsplanung Abzweigmuffen (keine NVT-Stichkabel ) in Nebenstränge erzeugt werden.
+Hier ist dann die Wasserfaser ebenfalls über die Muffen dieser beiden Nebenstränge (Hauptnebenstrang und Unternebenstrang) zu führen. Des Weiteren sind die NVT Bedarfe dieser NVT’s hinter der Abzweigmuffe ebenfalls wie oben beschrieben zum Central Office durch zu verbinden.
+
+
+
+Wenn im Nebenstrang ein Abzweig wie im unteren Bild existiert, ist für die Ablage der Faser in den Gf-Kassetten der Abzweigmuffe ein Hauptnebenstrang zu ermitteln. Der Hauptnebenstrang ist der Strang vom Abzweig des HK-Stranges zu der am weitest entferntesten Muffe (grün).
+Wenn in einem Nebenstrang an der Abzweigmuffe mehr als zwei Gf-Kabel ankommen (Stichkabel ausgeschlossen), werden die tote Faser wie unter Punkt 4 d oben beschrieben an der Abzweigmuffe des HK-Stranges in GF-Kassetten abgelegt.
+Die toten Faser des HK-Kabelstrangs sind hier dann die toten Faser des Hauptnebenstranges.
+Details siehe oberen Punkt 4 d  „Ablage von toten Fasern eines Gf-Kabels auf einer Muffe an der, außer ggf. dem Stichkabel zum NVT, noch mehr als ein weiteres Kabel endet.  
+ 
+
+
+
+
+Abhängigkeiten: keine
+Hinweise / Offene Punkte 
+
+
+
+
+Definition of Done: Prüfkriterien / Abnahmekriterien:
+Der Ausbauplaner erhält automatisch die Fasern der HK-Linie in den GF-Kassetten der strategischen Muffen und Abzweigmuffen der Ausbauplanung verbunden und abgelegt. 
+
+
+
