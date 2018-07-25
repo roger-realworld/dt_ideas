@@ -1,0 +1,38 @@
+@startuml
+
+title Classes - Class Diagram
+
+
+class tray_strategy_factory {
+    new(splice, cable_level_handler)
+    +tray_load_strategy strategy_for_fiber()
+}
+
+class base_tray_strategy {
+    {abstract} new(splice)
+    {abstract} pos_for_fiber(fiber_pin)
+    }
+class tray_waterfiber_strategy {
+    new(splice)
+    pos_for_fiber(fiber_pin)
+    }
+class tray_otherfiber_strategy {
+    new(splice)
+    pos_for_fiber(fiber_pin)
+    }
+class tray_dead_fiber_strategy {
+    new(splice)
+    pos_for_fiber(fiber_pin)
+    }
+class splice_loader {
+    load_trays()
+    }
+    
+base_tray_strategy <|-- tray_waterfiber_strategy
+base_tray_strategy <|-- tray_otherfiber_strategy
+base_tray_strategy <|-- tray_dead_fiber_strategy
+tray_strategy_factory - base_tray_strategy : provides >
+splice_loader o- base_tray_strategy 
+
+
+@enduml
