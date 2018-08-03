@@ -1,0 +1,352 @@
+#% text_encoding = iso8859_1
+##-------------------------------------------------------------------------
+##
+##     D E U T S C H E   T E L E K O M   A G
+##
+##     Datum der Erstellung : 31.07.2018
+##     Realisierer          : DT-IT
+##     Ersteller            : Roger Fretwell
+##     Projekt              : FTTH Factory
+##
+##     Copyright (C) Deutsche Telekom AG , all rights reserved.
+##-------------------------------------------------------------------------
+##
+## This class provides a test suite with all tests that verify
+## the pni_import matches the FPF specifications 
+##
+##-------------------------------------------------------------------------
+
+_package user
+
+_pragma(classify_level=restricted, topic=mpff!test)
+def_slotted_exemplar(:mpff!reserves_loader_tests,
+	## 
+	## 
+	## 
+	{        
+		{:builder, _unset},
+                {:properties, _unset}
+	},
+	{:db_test_case})
+$
+
+_pragma(classify_level=restricted, topic=mpff!test)
+mpff!reserves_loader_tests.define_shared_variable(
+        :builder_state,
+        hash_table.new(),
+        :private
+	)
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!reserves_loader_tests.one_time_setup_database()
+        ##
+        ##
+	_local l_view << mit_manager.main_pni_dataset
+#	l_view.create_scratchpad("memory::/")
+	l_view.switch(:write)
+        _local l_template_view << l_view.template_view
+        l_template_view.create_scratchpad("memory::/")
+               
+
+	_local builder << mpff!network_builder.new()
+	.builder << builder
+
+	_local make << builder.get_make_proc()
+
+	_local x << 100000
+        _local y << 100000
+
+        uub1 << make(:uub, :uub1, 0, y)
+        uub2 << make(:uub, :uub2, x, y)
+	uub3 << make(:uub, :uub3, x, y*3)
+	uub4 << make(:uub, :uub4, x, y*4)
+	uub5 << make(:uub, :uub5, x, y*6)
+	uub6  <<make(:uub, :uub6, x*2, y*3) # spur 1
+	uub7  <<make(:uub, :uub7, x*2, y*4) # spur 2
+ 	
+        ur1 << make(:underground_route, :ur1, uub1, uub2)
+	ur2 << make(:underground_route, :ur2, uub2, uub3)
+	ur3 << make(:underground_route, :ur3, uub3, uub4)
+	ur4 << make(:underground_route, :ur4, uub4, uub5)
+	ur5 << make(:underground_route, :ur5, uub3, uub6) # spur 1
+	ur6 << make(:underground_route, :ur6, uub4, uub7) # spur 2
+		
+
+        make(:sheath_96, :sheath1, {uub1, ur1, uub2})
+        make(:sheath_96, :sheath2, {uub2, ur2, uub3})
+	make(:sheath_96, :sheath3, {uub3, ur3, uub4})
+	make(:sheath_96, :sheath4, {uub4, ur4, uub5})
+	make(:sheath_48, :spur1, {uub3, ur5, uub6})
+	make(:sheath_48, :spur2, {uub4, ur6, uub7})
+
+	make(:splice, :splice1, _self.get(:uub1), "nb_test_splice")
+	make(:splice, :splice2, _self.get(:uub2), "nb_test_splice")
+	make(:splice, :splice3, _self.get(:uub3), "nb_test_splice")
+	make(:splice, :splice4, _self.get(:uub4), "nb_test_splice")
+	make(:splice, :splice5, _self.get(:uub5), "nb_test_splice")
+	make(:splice, :splice6, _self.get(:uub6), "nb_test_splice")
+	make(:splice, :splice7, _self.get(:uub7), "nb_test_splice")
+
+        make(:sloc_terminal, :terminal1, _self.get(:uub1))
+        make(:sloc_terminal, :terminal5, _self.get(:uub5))
+        make(:sloc_terminal, :terminal6, _self.get(:uub6))
+        make(:sloc_terminal, :terminal7, _self.get(:uub7))             
+	
+	.builder.connect(:splice1, :sheath1)
+	.builder.connect(:sheath1, :splice2)
+	.builder.connect(:splice2, :sheath2)
+	.builder.connect(:sheath2, :splice3)
+	.builder.connect(:splice3, :sheath3)
+	.builder.connect(:sheath3, :splice4)
+	.builder.connect(:splice4, :sheath4)
+	.builder.connect(:sheath4, :splice5)
+	.builder.connect(:splice3, :spur1)
+	.builder.connect(:spur1, :splice6)
+	.builder.connect(:splice4, :spur2)
+	.builder.connect(:spur2, :splice7)
+
+        .builder.connect(:splice1, :terminal1)
+        .builder.connect(:splice5, :terminal5)
+        .builder.connect(:splice6, :terminal6)
+        .builder.connect(:splice7, :terminal7)
+        
+
+	# Connect the spurs - slightly simplified version of SSP connectivity.
+	.builder.connect_fiber_run({:sheath1, :sheath2, :spur1}, 3, 4)
+	.builder.connect_fiber_run({:sheath1, :sheath2, :spur1}, 5, 10)
+	.builder.connect_fiber_run({:sheath1, :sheath2, :spur1}, 11, 18)
+	.builder.connect_fiber_run({:sheath1, :sheath2, :sheath3}, 19, 34)
+	.builder.connect_fiber_run({:sheath1, :sheath2, :sheath3}, 35, 60)
+	.builder.connect_fiber_run({:sheath1, :sheath2, :sheath3, :sheath4}, 61, 69)
+	.builder.connect_fiber_run({:sheath1, :sheath2, :sheath3, :sheath4}, 70, 77)
+	.builder.connect_fiber(:sheath3, {19, 34}, :spur2, {3, 19})
+	.builder.connect_fiber(:sheath3, {35, 60}, :spur2, {20, 46})
+        .builder.connect_fiber(:terminal1, {3, 77}, :sheath1, {3, 71})
+        .builder.connect_fiber(:spur1, {3, 4}, :terminal6, {1, 2})
+        .builder.connect_fiber(:spur1, {5, 10}, :terminal6, {3, 8})
+        .builder.connect_fiber(:spur1, {11, 18}, :terminal6, {9, 16})
+        .builder.connect_fiber(:spur2, {3, 19}, :terminal7, {1, 17})
+        .builder.connect_fiber(:spur2, {20, 46}, :terminal7, {18, 44})
+        .builder.connect_fiber(:sheath4, {61, 69}, :terminal5, {1, 9})
+        .builder.connect_fiber(:sheath4, {70, 77}, :terminal5, {10, 17})
+
+        _if l_template_view.scratchpad?
+	_then
+		l_template_view.rollback()
+		l_template_view.up()
+		l_template_view.switch(:readonly)
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!reserves_loader_tests.set_up()
+
+        .properties << property_list.new()
+        _super.set_up()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!reserves_loader_tests.setup_db()
+        ## 
+        ##
+        _if _not _self.one_time_setup_failed?()
+        _then
+                state << _self.builder_state
+                _if state.empty?
+                _then
+                        # If we restart the image we have to rebuild the test alternative.
+                        _self.remove_test_alternatives()
+                _endif
+                .builder << mpff!network_builder.new().
+                            set_state(state)
+        _endif
+        _super.setup_db()
+_endmethod
+$
+_pragma(classify_level=restricted,topic=MUnit)
+_private _method  mpff!reserves_loader_tests.remove_test_alternatives()
+
+	## Remove the the test alternative in each of the ds views.  Any 
+	## changes are commited before the views are moved.
+	##
+	## The test alternative on named after the class name of the
+	## test and located below the result of
+	## _self.main_testing_alternative_name
+
+	_for a_ds_view _over _self.ds_views.fast_elements()
+	_loop
+		# This will commit changes made by one_time_setup_database()
+		a_ds_view.commit()
+		
+                a_ds_view.goto_top_alternative()
+                
+                _if _not a_ds_view.has_alternative?( _self.main_testing_alternative_name )
+                _then
+                        a_ds_view.spawn( _self.main_testing_alternative_name )
+                _endif
+                
+                a_ds_view.go_to_alternative( _self.main_testing_alternative_name , :write )
+
+                _if a_ds_view.has_alternative?( _self.class_name )
+                _then
+                        a_ds_view.remove_alternative( _self.class_name )
+                _endif
+        _endloop 
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!reserves_loader_tests.tear_down()
+	##
+	##
+	_local l_view << mit_manager.main_pni_dataset
+        _local l_template_view << l_view.template_view
+
+	_if l_view.scratchpad?
+	_then
+		l_view.rollback()
+		l_view.up()
+		l_view.switch(:readonly)
+	_endif
+
+        _self.builder_state << .builder.get_state()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!reserves_loader_tests.test_reserves()
+	##
+	##
+        _self.given_a_network_with_connected_feeders.
+                given_a_trace_tree.
+                when_i_connect_reserves.
+                then_reserves_are_connected(
+                        {:sheath1, :sheath2, :sheath3, :sheath4}, {78, 96}).
+                then_reserves_are_marked(
+                        {:sheath1, :sheath2, :sheath3, :sheath4}, {78, 96})
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!reserves_loader_tests.given_a_network_with_connected_feeders
+        ## 
+        ## 
+        _return _self
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!reserves_loader_tests.given_a_trace_tree
+        ## 
+        ## 
+        .properties[:trace_tree] << tree.new(_self.get(:splice1))
+        
+        _self.mpff_downstream_trace(.properties[:trace_tree])
+
+        _global a1
+        a1 << .properties[:trace_tree]
+        
+        _return _self
+_endmethod
+$        
+
+_pragma(classify_level=basic, topic={mpff!pfc_extensions})
+_method mpff!reserves_loader_tests.mpff_downstream_trace(p_parent_tree)
+	_local l_parent_splice << p_parent_tree.key
+	_local l_other_sheath_splice, l_tree, l_leaf? << _true 
+	_local l_downstream_cables << l_parent_splice.get_downstream_cables()
+	_if l_downstream_cables.an_element() _isnt _unset
+	_then
+		_for i_cable _over l_downstream_cables.fast_elements()
+		_loop
+			_if (l_other_sheath_splice << i_cable.pins[2].sheath_splice) _isnt _unset
+			_then
+				l_tree << tree.new(l_other_sheath_splice)
+				l_tree.parent << p_parent_tree
+				l_tree.value << i_cable.length_for_trace
+				_self.mpff_downstream_trace(l_tree)
+				l_leaf? << _false
+			_endif
+		_endloop
+	_endif
+	_return p_parent_tree 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!reserves_loader_tests.when_i_connect_reserves
+        ## 
+        ##
+        mpff!reserves_loader.new().mpff!connect_reserves(.properties[:trace_tree])
+
+        
+        _return _self
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!reserves_loader_tests.then_reserves_are_connected(p_sheaths, p_fibers)
+        ## 
+        ## Check that for the given run of sheaths (P_SHEATHS) the
+        ## given fibers (P_FIBERS) are connected at the intermediate splices.
+
+        start_sheath << _unset
+        _for i_sheath _over p_sheaths.fast_elements()
+        _loop
+                _if start_sheath _isnt _unset
+                _then
+                        sheath1 << _self.get(start_sheath)
+                        sheath2 << _self.get(i_sheath)
+                        pin1 << sheath1.get_end_pin()
+                        pin2 << sheath2.get_start_pin()
+                        pins1 << pin1.all_low_level_traceable_items
+                        pins2 << pin2.all_low_level_traceable_items
+                        
+                        _for i _over p_fibers[2].upto(p_fibers[2])
+                        _loop
+                                _self.assert_true(pins1[i].connected_to?(pins2[i]),
+                                                  write_string("Missing connection between '",
+                                                               start_sheath, "' and '",
+                                                               i_sheath, "' at fiber: ", i))
+                        _endloop
+
+                _endif
+                start_sheath << i_sheath
+        _endloop
+
+        _return _self
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!reserves_loader_tests.then_reserves_are_marked(sheaths, fibers)
+        ## 
+        ## Check that for the given run of sheaths (P_SHEATHS) the
+        ## given fibers (P_FIBERS) are marked as reserved, by setting
+        ## the fiber attribute to 'Reserved'.
+
+        _return _self
+_endmethod
+$
+
+
+
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!reserves_loader_tests.get(name)
+        ## 
+        ## 
+	_return .builder.get(name)
+_endmethod
+$
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!reserves_loader_tests.clear_state()
+
+        _self.builder_state.empty()
+_endmethod
+$
+

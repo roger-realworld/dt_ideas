@@ -1,0 +1,439 @@
+#% text_encoding = iso8859_1
+##--------------------------------------------------------------
+##
+##           D E U T S C H E   T E L E K O M   A G
+##
+##     Datum der Erstellung : 26.07.2018
+##     Realisierer          : Deutsche Telekom IT GmbH
+##     Ersteller            : Roger Fretwell
+##     Projekt              : FTTH Factory
+##
+##
+##     Copyright (C) Deutsche Telekom AG , all rights reserved.
+##-------------------------------------------------------------------------
+## FTTH Factory: Building blocks for creating test network. 
+##
+## Prerequisities: 
+##-------------------------------------------------------------------------
+
+_package sw
+
+_pragma(classify_level=basic, topic=mpff!test)
+def_slotted_exemplar(:mpff!network_builder,
+        {
+		{:properties, _unset}
+        },
+{})
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+mpff!network_builder.define_shared_constant(
+        :specs,
+	## 
+	## 
+	##
+        property_list.new_with(
+                :default_specs,
+                property_list.new_with(
+                        :manhole_type, "Manhole",
+                        :manhole_spec, "MH-1.4 x 0.6 x 0.9",
+                        :sheath_spec, "Nexans 4 F",
+                        :sheath_spec_96, "Nexans 96",
+                        :sheath_spec_48, "Nexans 48 F",
+                        :splice_spec, "VF 6 FIST 2 160", # Needs at least 3 tray capacity
+                        :splice_method, "Fusion",                        
+                        :splice_type, "breaking",
+                        :tray_spec, "SE-4-2", # Choose any 2 pos tray.
+                        :tray_spec2, "SC-4-1", # Choose any 2 pos tray.
+                        :tray_side, "A",
+                        :sloc_terminal_spec, "Nexans 96 F (LOC)"
+                              ),
+                :dt_specs,
+                property_list.new_with(
+                        :manhole_type, "Mannloch",
+                        :manhole_spec, "AzK 2b Brkl 12 1165x800",
+                        :sheath_spec, "4/74S/A-D2Y/1*4/40250914/Mikrokabel",
+                        :splice_spec, "EMMuffe   EMMuffe -C/G-HK48/VZK24/40277197",
+                        :splice_method, "Fusion",                        
+                        :splice_type, "mit Aufteilung",
+                        :tray_spec, "MMK",
+                        :tray_side, "1",
+                        :sloc_terminal_spec, "FIXME"
+                              )),
+        :public)
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+mpff!network_builder.define_shared_variable(
+        :actual_specs,
+	## 
+	## 
+	##
+        :dt_specs,
+        :public)
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.spec(p_id)
+        ## 
+        ## 
+        _return _self.specs[_self.actual_specs][p_id]
+_endmethod
+$
+
+
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.new()
+	## 
+	## 
+	_return _clone.init()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.init()
+	## 
+	## 
+	.properties << hash_table.new()
+
+        _constant _local name << 'nb_test_splice'
+        _self.int!make_sheath_splice_template(name)
+
+        _return _self
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.make_sheath_splice_template(p_name)
+
+        _self.int!make_sheath_splice_template(p_name)
+_endmethod
+$
+        
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.int!make_sheath_splice_template(p_name)
+        ## 
+        ##
+        _local l_view << gis_program_manager.cached_dataset(:gis)
+        _if l_view.template_view.collections[:sheath_splice].select(predicate.eq(:name, p_name)).empty?.not
+        _then
+                _leave
+        _endif
+               
+        _local l_col << gis_program_manager.cached_dataset(:gis).collection(:sheath_splice)
+	
+        l_construction_status << l_col.field(:construction_status).type.enumerator.text_translator.translation_for_value("In Service")
+        
+	_local l_splice_fields << property_list.new_with(
+					  :name, :test1,
+					  :construction_status,	l_construction_status,
+					  :spec_id, _self.spec(:splice_spec),
+					  :splice_type, _self.spec(:splice_type),
+					  :splice_method, _self.spec(:splice_method))
+	
+	_local l_splice << record_transaction.new_insert( l_col, l_splice_fields).run()
+	
+
+        write("a4:", p_name)
+        _if p_name = "nb_test_splice2"
+        _then
+                write("a5")
+                l_splice.add_n_splice_trays(5, _self.spec(:tray_spec2), "A", :mount_pos, 1)
+                l_splice.add_n_splice_trays(5, _self.spec(:tray_spec), "B", :mount_pos, 1)
+        _else
+                l_splice.add_n_splice_trays(3, _self.spec(:tray_spec), "A", :mount_pos, 1)
+        _endif
+        
+	
+ 	_local l_template_engine << pni_save_as_template_engine.new( l_splice )
+        l_template_engine.save_template(p_name)
+	
+	write("Generated template '", p_name, "'.")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.get_make_proc()
+        ## 
+        ##
+	_local l_properties << .properties
+	
+        _local me << _self
+        make << _proc(p_method, p_name, _gather p_args)
+                        _import l_properties, me
+                        l_result << me.perform(p_method.with_parentheses.as_symbol(), p_name, _scatter p_args)               
+                        l_properties[p_name] << l_result
+
+                        _return l_result
+                _endproc
+
+	_return make
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.uub(name, x, y)
+        ## 
+        ##
+        _local l_view << mit_manager.main_pni_dataset
+        _dynamic !current_world! << l_view.world
+        _local l_uubs << l_view.collections[:uub]
+        _local l_uub << l_uubs.new_template_record()
+        l_uub.type << _self.spec(:manhole_type)
+        l_uub.spec_id << _self.spec(:manhole_spec)
+        l_uub.label << name
+        
+        _local l_record << l_uubs.insert(l_uub)
+
+        l_record.make_geometry(:location, pseudo_point.new_at(coordinate.new(x, y)))
+
+        _return l_record
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.underground_route(name, structure1, structure2)
+        ##
+
+        _local l_view << mit_manager.main_pni_dataset
+        _dynamic !current_world! << l_view.world
+        _local l_underground_routes << l_view.collections[:underground_route]
+        _local l_underground_route << l_underground_routes.new_template_record()
+
+        l_underground_route.centre_point_depth << length_value.new(2, :m)
+        l_underground_route.diameter << length_value.new(1, :m)
+        l_underground_route.name << name
+        
+        _local l_record << l_underground_routes.insert(l_underground_route)
+        _local loc1 << structure1.location
+        _local loc2 << structure2.location
+        _local chain1 << pseudo_chain.new(sector.new_with_xy(loc1.x, loc1.y, loc2.x, loc2.y))
+        
+        l_record.make_geometry(:route, chain1)
+
+        _return l_record
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.sheath_96(name, structures)
+
+        _return _self.sheath(name, structures, :sheath_spec_96)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.sheath_48(name, structures)
+
+        _return _self.sheath(name, structures, :sheath_spec_48)
+_endmethod
+$
+
+        
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.sheath(name, structures, _optional spec_id)
+        ##
+
+        _local l_view << mit_manager.main_pni_dataset
+        _local l_sheaths << l_view.collections[:sheath_with_loc]
+        _local l_sheath << l_sheaths.new_template_record()
+
+	# Use a small cable for these tests.
+        l_sheath.spec_id << _self.spec(spec_id.default(:sheath_spec))
+        l_sheath.name << name
+        
+        _local l_record << l_sheaths.insert(l_sheath)
+        l_record.place_in_structures(structures)
+
+        _return l_record
+_endmethod
+$
+
+
+
+
+      
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.splice(name, structure, _optional template_name)
+	##
+	_local l_view << mit_manager.main_pni_dataset
+	_local l_record
+        write("a3:", template_name)
+	_if template_name _isnt _unset
+	_then
+                write("a4")
+		l_template << l_view.template_view.collections[:sheath_splice].select(predicate.eq(:name, template_name)).an_element()
+
+		l_record << l_template.place_object_template(name, :gis)
+	_else
+		_local l_splices << l_view.collections[:sheath_splice]
+		_local l_splice << l_splices.new_template_record()
+		
+		l_splice.spec_id << _self.spec(:splice_spec)
+		l_splice.splice_method << _self.spec(:splice_method)
+		l_splice.splice_type << _self.spec(:splice_type)
+		l_splice.name << name
+		
+		l_record << l_splices.insert(l_splice)
+	_endif
+	
+        l_record.associate_structure(structure)
+
+        _return l_record
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.sloc_terminal(name, structure)
+	##
+	_local l_view << mit_manager.main_pni_dataset
+	_local l_record
+        
+        _local l_terminals << l_view.collections[:sheath_with_loc_terminal]
+        _local l_terminal << l_terminals.new_template_record()
+        
+        l_terminal.spec_id << _self.spec(:sloc_terminal_spec)
+        l_terminal.name << name
+        
+        l_record << l_terminals.insert(l_terminal)	
+	
+        l_record.associate_structure(structure)
+
+        _return l_record
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.get(name)
+	##
+	_return .properties[name]
+_endmethod
+$
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.set(name, object)
+	##
+	_return .properties[name] << object
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.connect(name1, name2)
+
+        write("connect:", name1, " -> ", name2)
+	n1 << _self.get(name1)
+	n2 << _self.get(name2)
+
+	_if n1.type_is?(:sheath_with_loc) _andif
+	    n2.type_is?(:sheath_splice)
+	_then
+		sl1 << n1
+		sp1 << n2
+
+	_elif  n1.type_is?(:sheath_splice) _andif
+	       n2.type_is?(:sheath_with_loc)
+	_then
+
+		sl1 << n2
+		sp1 << n1
+        _elif n1.type_is?(:sheath_splice) _andif
+              n2.type_is?(:sheath_with_loc_terminal)
+        _then
+                n2.sheath_splice << n1
+                _return 
+        _elif n2.type_is?(:sheath_splice) _andif
+              n1.type_is?(:sheath_with_loc_terminal)
+        _then
+                n1.sheath_splice << n2
+                _return
+	_endif
+	uub1 << sp1.get_structure()
+	mc1 << sl1.cable_records_in(uub1)[1]
+	sp1.connect_to_cables({mc1}, _false)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.connect_fiber(name1, f1, name2, f2)
+
+	sl1 << _self.get(name1)
+	sl2 << _self.get(name2)
+
+        _if sl1.type_is?(:sheath_with_loc_terminal)
+        _then
+                pin1 << sl1
+                pins1 << sl1.next_level_pins()[1].next_level_pins()
+        _else
+                pin1 << sl1.get_end_pin()
+                pins1 << pin1.all_low_level_traceable_items
+        _endif
+        _if sl2.type_is?(:sheath_with_loc_terminal)
+        _then
+                pin2 << sl2
+                pins2 << sl2.next_level_pins()[1].next_level_pins()
+        _else
+                pin2 << sl2.get_start_pin()
+                pins2 << pin2.all_low_level_traceable_items
+	_endif
+
+	_if f1.is_kind_of?({})
+	_then
+                f2a << f2[1]
+                #write("d0:", name1, " ", pin1, " ", f1[1], "-", f1[2], " -> ", name2, " ", pin2, " ", f2[1], "-", f2[2])
+                
+                _for i _over f1[1].upto(f1[2])
+                _loop
+                        fiber1 << pins1[i]
+                        fiber2 << pins2[f2a]
+                        write("d1:", i, "->", f2a)
+                        fiber1.connect_to(fiber2)
+
+                        f2a +<< 1
+                _endloop
+        _else
+		fiber1 << pins1[f1]
+		fiber2 << pins2[f2]
+                fiber1.connect_to(fiber2)
+        _endif
+        
+_endmethod
+$
+		
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.connect_fiber_run(sheaths, from, to)
+
+	start_sheath << _unset
+	
+	_for i_sheath _over sheaths.fast_elements()
+	_loop
+		_if start_sheath _is _unset
+		_then
+			start_sheath << i_sheath
+			_continue
+		_endif
+                _self.connect_fiber(start_sheath, {from, to}, i_sheath, {from, to})
+                                
+		start_sheath << i_sheath
+        _endloop
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.get_state()
+
+        _return .properties
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!network_builder.set_state(p_state)
+
+        .properties << p_state
+
+        _return _self
+_endmethod
+$
+
+
+

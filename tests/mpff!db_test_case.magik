@@ -1,0 +1,169 @@
+#% text_encoding = iso8859_1
+##-------------------------------------------------------------------------
+##
+##     D E U T S C H E   T E L E K O M   A G
+##
+##     Datum der Erstellung : 03.08.2018
+##     Realisierer          : DT-IT
+##     Ersteller            : Roger Fretwell
+##     Projekt              : FTTH Factory
+##
+##     Copyright (C) Deutsche Telekom AG , all rights reserved.
+##-------------------------------------------------------------------------
+##
+## This class provides a test suite with all tests that verify
+## the pni_import matches the FPF specifications 
+##
+##-------------------------------------------------------------------------
+
+_package user
+
+_pragma(classify_level=restricted, topic=mpff!test)
+def_slotted_exemplar(:mpff!db_test_case,
+	## 
+	## 
+	## 
+	{        
+		{:builder, _unset},
+                {:properties, _unset}
+	},
+	{:db_test_case})
+$
+
+_pragma(classify_level=restricted, topic=mpff!test)
+mpff!db_test_case.define_shared_variable(
+        :builder_state,
+        hash_table.new(),
+        :private
+	)
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!db_test_case.one_time_setup_database()
+        ##
+        ##
+	_local l_view << mit_manager.main_pni_dataset
+#	l_view.create_scratchpad("memory::/")
+	l_view.switch(:write)
+        _local l_template_view << l_view.template_view
+        l_template_view.create_scratchpad("memory::/")
+               
+
+	_local builder << mpff!network_builder.new()
+	.builder << builder
+
+	_local make << builder.get_make_proc()
+
+	_local x << 100000
+        _local y << 100000
+
+        _self.mpff!build_test_network()
+                               
+        _if l_template_view.scratchpad?
+	_then
+		l_template_view.rollback()
+		l_template_view.up()
+		l_template_view.switch(:readonly)
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_abstract _method mpff!db_test_case.mpff!build_test_network()
+        ## 
+        ## 
+          
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!db_test_case.set_up()
+
+        .properties << property_list.new()
+        _super.set_up()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!db_test_case.setup_db()
+        ## 
+        ##
+        _if _not _self.one_time_setup_failed?()
+        _then
+                state << _self.builder_state
+                _if state.empty?
+                _then
+                        # If we restart the image we have to rebuild the test alternative.
+                        _self.remove_test_alternatives()
+                _endif
+                .builder << mpff!network_builder.new().
+                            set_state(state)
+        _endif
+        _super.setup_db()
+_endmethod
+$
+_pragma(classify_level=restricted,topic=MUnit)
+_private _method  mpff!db_test_case.remove_test_alternatives()
+
+	## Remove the the test alternative in each of the ds views.  Any 
+	## changes are commited before the views are moved.
+	##
+	## The test alternative on named after the class name of the
+	## test and located below the result of
+	## _self.main_testing_alternative_name
+
+	_for a_ds_view _over _self.ds_views.fast_elements()
+	_loop
+		# This will commit changes made by one_time_setup_database()
+		a_ds_view.commit()
+		
+                a_ds_view.goto_top_alternative()
+                
+                _if _not a_ds_view.has_alternative?( _self.main_testing_alternative_name )
+                _then
+                        a_ds_view.spawn( _self.main_testing_alternative_name )
+                _endif
+                
+                a_ds_view.go_to_alternative( _self.main_testing_alternative_name , :write )
+
+                _if a_ds_view.has_alternative?( _self.class_name )
+                _then
+                        a_ds_view.remove_alternative( _self.class_name )
+                _endif
+        _endloop 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!db_test_case.tear_down()
+	##
+	##
+	_local l_view << mit_manager.main_pni_dataset
+        _local l_template_view << l_view.template_view
+
+	_if l_view.scratchpad?
+	_then
+		l_view.rollback()
+		l_view.up()
+		l_view.switch(:readonly)
+	_endif
+
+        _self.builder_state << .builder.get_state()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!db_test_case.get(name)
+        ## 
+        ## 
+	_return .builder.get(name)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!db_test_case.clear_state()
+
+        _self.builder_state.empty()
+_endmethod
+$
+

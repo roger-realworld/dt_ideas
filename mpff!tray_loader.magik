@@ -1,0 +1,79 @@
+#% text_encoding = iso8859_1
+##--------------------------------------------------------------
+##
+##           D E U T S C H E   T E L E K O M   A G
+##
+##     Datum der Erstellung : 26.07.2018
+##     Realisierer          : Deutsche Telekom IT GmbH
+##     Ersteller            : Roger Fretwell
+##     Projekt              : FTTH Factory
+##
+##
+##     Copyright (C) Deutsche Telekom AG , all rights reserved.
+##-------------------------------------------------------------------------
+## FTTH Factory: Load fibers into trays at a splice.
+##
+## Prerequisities: 
+##-------------------------------------------------------------------------
+
+_package user
+
+_pragma(classify_level=restricted, topic=mpff!pfc_custom)
+def_slotted_exemplar(:mpff!tray_loader,
+	## 
+	## 
+	## 
+	{
+		{:splice, _unset},
+		{:cable_level_handler, _unset}
+	},
+	{})
+$
+
+_pragma(classify_level=restricted, topic=mpff!pfc_custom)
+_method mpff!tray_loader.new()
+	## 
+	## Create a new cable tray loader for P_SPLICE.
+	##
+	_return _clone.init()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic=mpff!pfc_custom)
+_method mpff!tray_loader.init()
+	## 
+	## Initialise a new cable tray loader for P_SPLICE.
+	##
+	_return _self
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic=mpff!pfc_custom)
+_method mpff!tray_loader.mpff!load_trays(p_splice)
+	## 
+	## Load the trays at P_SPLICE.
+	##
+
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic=mpff!pfc_custom)
+_method mpff!tray_loader.int!load_pin(p_fiber_pin, p_done_pins, p_strategy_factory)
+	## 
+	##
+        tray << "FIXME"
+        pos << "FIXME"
+	alloc << tray_allocation.new(p_fiber_pin.sheath_pin)	
+	alloc.assign_fibre(p_fiber_pin.act_high, tray, pos)
+
+	l_next_pins << equality_set.new_from(p_fiber_pin.splice_holder().contained_objects())
+                                             
+        p_done_pins.add_all(l_next_pins)
+
+	l_next_pins.remove(p_fiber_pin)
+	
+	# We can assume that l_next_pins has at most 2 elements.
+	_return l_next_pins.an_element()
+_endmethod
+$

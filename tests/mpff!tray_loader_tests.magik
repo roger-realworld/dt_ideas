@@ -1,0 +1,385 @@
+#% text_encoding = iso8859_1
+##-------------------------------------------------------------------------
+##
+##     D E U T S C H E   T E L E K O M   A G
+##
+##     Datum der Erstellung : 03.08.2018
+##     Realisierer          : DT-IT
+##     Ersteller            : Roger Fretwell
+##     Projekt              : FTTH Factory
+##
+##     Copyright (C) Deutsche Telekom AG , all rights reserved.
+##-------------------------------------------------------------------------
+##
+## This class provides a test suite with all tests that verify
+## the pni_import matches the FPF specifications 
+##
+##-------------------------------------------------------------------------
+
+_package user
+
+_pragma(classify_level=restricted, topic=mpff!test)
+def_slotted_exemplar(:mpff!tray_loader_tests,
+	## 
+	## 
+	## 
+	{        
+	},
+	{:mpff!db_test_case})
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!tray_loader_tests.mpff!build_test_network()
+
+	_local make << .builder.get_make_proc()
+
+	_local x << 100000
+        _local y << 100000
+
+        .builder.make_sheath_splice_template("nb_test_splice2")
+        
+        uub1 << make(:uub, :uub1, 0, y)
+        uub2 << make(:uub, :uub2, x, y)
+	uub3 << make(:uub, :uub3, x, y*3)
+	uub4 << make(:uub, :uub4, x, y*4)
+	uub5 << make(:uub, :uub5, x, y*6)
+	uub6  <<make(:uub, :uub6, x*2, y*3) # spur 1
+	uub7  <<make(:uub, :uub7, x*2, y*4) # spur 2
+ 	
+        ur1 << make(:underground_route, :ur1, uub1, uub2)
+	ur2 << make(:underground_route, :ur2, uub2, uub3)
+	ur3 << make(:underground_route, :ur3, uub3, uub4)
+	ur4 << make(:underground_route, :ur4, uub4, uub5)
+	ur5 << make(:underground_route, :ur5, uub3, uub6) # spur 1
+	ur6 << make(:underground_route, :ur6, uub4, uub7) # spur 2
+		
+
+        make(:sheath_96, :sheath1, {uub1, ur1, uub2})
+        make(:sheath_96, :sheath2, {uub2, ur2, uub3})
+	make(:sheath_96, :sheath3, {uub3, ur3, uub4})
+	make(:sheath_96, :sheath4, {uub4, ur4, uub5})
+	make(:sheath_48, :spur1, {uub3, ur5, uub6})
+	make(:sheath_48, :spur2, {uub4, ur6, uub7})
+
+	make(:splice, :splice1, _self.get(:uub1), "nb_test_splice2")
+	make(:splice, :splice2, _self.get(:uub2), "nb_test_splice2")
+	make(:splice, :splice3, _self.get(:uub3), "nb_test_splice2")
+	make(:splice, :splice4, _self.get(:uub4), "nb_test_splice2")
+	make(:splice, :splice5, _self.get(:uub5), "nb_test_splice2")
+	make(:splice, :splice6, _self.get(:uub6), "nb_test_splice2")
+	make(:splice, :splice7, _self.get(:uub7), "nb_test_splice2")
+
+        make(:sloc_terminal, :terminal1, _self.get(:uub1))
+        make(:sloc_terminal, :terminal5, _self.get(:uub5))
+        make(:sloc_terminal, :terminal6, _self.get(:uub6))
+        make(:sloc_terminal, :terminal7, _self.get(:uub7))             
+	
+	.builder.connect(:splice1, :sheath1)
+	.builder.connect(:sheath1, :splice2)
+	.builder.connect(:splice2, :sheath2)
+	.builder.connect(:sheath2, :splice3)
+	.builder.connect(:splice3, :sheath3)
+	.builder.connect(:sheath3, :splice4)
+	.builder.connect(:splice4, :sheath4)
+	.builder.connect(:sheath4, :splice5)
+	.builder.connect(:splice3, :spur1)
+	.builder.connect(:spur1, :splice6)
+	.builder.connect(:splice4, :spur2)
+	.builder.connect(:spur2, :splice7)
+
+        .builder.connect(:splice1, :terminal1)
+        .builder.connect(:splice5, :terminal5)
+        .builder.connect(:splice6, :terminal6)
+        .builder.connect(:splice7, :terminal7)
+        
+
+	# Connect the spurs - slightly simplified version of SSP connectivity.
+	.builder.connect_fiber_run({:sheath1, :sheath2, :spur1}, 3, 4)
+	.builder.connect_fiber_run({:sheath1, :sheath2, :spur1}, 5, 10)
+	.builder.connect_fiber_run({:sheath1, :sheath2, :spur1}, 11, 18)
+	.builder.connect_fiber_run({:sheath1, :sheath2, :sheath3}, 19, 34)
+	.builder.connect_fiber_run({:sheath1, :sheath2, :sheath3}, 35, 60)
+	.builder.connect_fiber_run({:sheath1, :sheath2, :sheath3, :sheath4}, 61, 69)
+	.builder.connect_fiber_run({:sheath1, :sheath2, :sheath3, :sheath4}, 70, 77)
+	.builder.connect_fiber(:sheath3, {19, 34}, :spur2, {3, 19})
+	.builder.connect_fiber(:sheath3, {35, 60}, :spur2, {20, 46})
+        .builder.connect_fiber(:terminal1, {3, 77}, :sheath1, {3, 71})
+        .builder.connect_fiber(:spur1, {3, 4}, :terminal6, {1, 2})
+        .builder.connect_fiber(:spur1, {5, 10}, :terminal6, {3, 8})
+        .builder.connect_fiber(:spur1, {11, 18}, :terminal6, {9, 16})
+        .builder.connect_fiber(:spur2, {3, 19}, :terminal7, {1, 17})
+        .builder.connect_fiber(:spur2, {20, 46}, :terminal7, {18, 44})
+        .builder.connect_fiber(:sheath4, {61, 69}, :terminal5, {1, 9})
+        .builder.connect_fiber(:sheath4, {70, 77}, :terminal5, {10, 17})
+
+        # Connect the reserves
+        .builder.connect_fiber(:sheath1, {78, 96}, :sheath2, {78, 96})
+        .builder.connect_fiber(:sheath2, {78, 96}, :sheath3, {78, 96})
+        .builder.connect_fiber(:sheath3, {78, 96}, :sheath4, {78, 96})
+                               
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!tray_loader_tests.test_trays_at_splice1()
+	##
+	## We don't expect any trays to be loaded at splice1.
+        ##
+        _self.given_a_network_with_connected_feeders.
+                when_i_load_trays_for_splice(:splice1).
+                then_these_trays_are_loaded() # No loaded trays expected.
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!tray_loader_tests.test_trays_at_splice6()
+	##
+	##
+        _self.given_a_network_with_connected_feeders.
+                when_i_load_trays_for_splice(:splice6).
+                then_these_trays_are_loaded(
+                        { # side 1
+                                 1, # tray number
+                                 {
+                                         1, {{:sheath1, 1}, {:sheath2, 1}}, # tray pos, contained fibers
+                                         2, {{:sheath1, 3}, {:sheath2, 3}} 
+                                 },
+                                 2,
+                                 {
+                                         1, {{:sheath1, 1}, {:sheath2, 1}} # tray pos, contained fibers
+                                 }
+                        },
+                        {# side 2
+                                
+                                1, # tray number
+                                {
+                                        1, {{:sheath1, 1}, {:sheath2, 1}} # tray pos, contained fibers
+                                },
+                                2,
+                                {
+                                        1, {{:sheath1, 1}, {:sheath2, 1}} # tray pos, contained fibers
+                                }
+                        })
+_endmethod
+$
+
+
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!tray_loader_tests.given_a_network_with_connected_feeders
+        ## 
+        ## 
+        _return _self
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={mpff!pfc_extensions})
+_method mpff!tray_loader_tests.mpff_downstream_trace(p_parent_tree)
+	_local l_parent_splice << p_parent_tree.key
+	_local l_other_sheath_splice, l_tree, l_leaf? << _true 
+	_local l_downstream_cables << l_parent_splice.get_downstream_cables()
+	_if l_downstream_cables.an_element() _isnt _unset
+	_then
+		_for i_cable _over l_downstream_cables.fast_elements()
+		_loop
+			_if (l_other_sheath_splice << i_cable.pins[2].sheath_splice) _isnt _unset
+			_then
+				l_tree << tree.new(l_other_sheath_splice)
+				l_tree.parent << p_parent_tree
+				l_tree.value << i_cable.length_for_trace
+				_self.mpff_downstream_trace(l_tree)
+				l_leaf? << _false
+			_endif
+		_endloop
+	_endif
+	_return p_parent_tree 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!tray_loader_tests.when_i_load_trays_for_splice(p_splice_name)
+        ## 
+        ##
+        _local l_splice << _self.get(p_splice_name)
+        
+        mpff!tray_loader.new().mpff!load_trays(l_splice)
+
+        .properties[:current_splice] << l_splice
+        
+        _return _self
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!tray_loader_tests.then_these_trays_are_loaded(_gather p_sides)
+        ## 
+        ## Check that for the given set of splices (P_SPLICES) the
+        ## given trays are loaded - and that all other trays are empty.
+        ##
+
+        expected_sides << rope.new()
+
+
+        # Sides are either {}, {<side1>}, or {<side1>, <side2>}
+        _for i_side_details _over p_sides.fast_elements()
+        _loop
+                expected_trays << _self.int!expected_trays(i_side_details)
+                expected_sides.add(expected_trays)
+        _endloop
+        
+
+        l_splice << .properties[:current_splice]
+        _self.int!check_splice_trays(l_splice, expected_sides)
+
+        _return _self
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!tray_loader_tests.int!expected_trays(p_side_details)
+        ## 
+        ##
+        _local me << _self        
+        _local side_trays << property_list.new()
+        _for i_tray_no, i_tray_details _over p_side_details.fast_elements_in_pairs()
+        _loop
+                l_tray_details << property_list.new()
+
+                _for i_tray_pos, i_pos_details _over i_tray_details.fast_elements_in_pairs()
+                _loop
+                        # Add start and end pins for the sheath.
+                        # This simplifies the later comparisons.
+                        l_pos_details << equality_set.new()
+                        l_pos_details.add_all(
+                                i_pos_details.map(
+                                        _proc(a)
+                                                _import me
+                                                (sheath_name, fiber) << (_scatter a)
+                                                sheath << me.get(sheath_name)
+                                                _return sheath.get_end_pin().all_low_level_traceable_items[fiber]
+                                        _endproc))
+                        l_pos_details.add_all(
+                                i_pos_details.map(
+                                        _proc(a)
+                                                _import me
+                                                (sheath_name, fiber) << (_scatter a)
+                                                sheath << me.get(sheath_name)
+                                                _return sheath.get_start_pin().all_low_level_traceable_items[fiber]
+                                        _endproc))
+                        l_tray_details[i_tray_pos] << l_pos_details
+                _endloop
+                side_trays[i_tray_no] << i_tray_details
+        _endloop
+        _return side_trays
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!tray_loader_tests.int!check_splice_trays(p_splice, p_expected_sides)
+        ## 
+        ##
+        sides << p_splice.mounting_side_names
+
+        # Assume that there are 2 sides for every splice in the test.
+
+        _self.int!check_splice_trays_side(p_splice, p_expected_sides, 1, sides[1])
+        _self.int!check_splice_trays_side(p_splice, p_expected_sides, 2, sides[2])
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!tray_loader_tests.int!check_splice_trays_side(p_splice, p_expected_sides, p_side_index, p_side)
+        ## 
+        ##
+        sides << p_splice.mounting_side_names
+        trays << p_splice.mit_splice_trays.select(predicate.eq(:mount_side, p_side)).
+                 result.
+                 as_sorted_collection(_proc(a,b) >> a.mount_pos < b.mount_pos _endproc)
+        side << sides.index_of_eq(p_side)
+        _for i, i_tray _over trays.fast_keys_and_elements()
+        _loop
+                _if p_expected_sides.size >= side
+                _then
+                        l_expected_side << p_expected_sides[side]
+                        l_expected_tray << l_expected_side[i]
+                _else
+                        l_expected_tray << _unset
+                _endif
+                
+                _if l_expected_tray _isnt _unset
+                _then
+                        _self.int!check_expected_tray(i_tray, l_expected_tray)
+                _else
+                        _self.int!check_empty_tray(i_tray)
+                _endif
+        _endloop
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!tray_loader_tests.int!check_empty_tray(p_tray)
+        ## 
+        ## 
+        _self.assert_true(p_tray.fiber_pins.empty?,
+                          write_string("Expected tray '", p_tray.name, "' in splice '", p_tray.sheath_splice.name,
+                                       "' to be empty."))
+                          
+_endmethod
+$
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!tray_loader_tests.int!check_expected_tray(p_tray, p_expected_tray)
+        ## 
+        _for i_holder _over p_tray.splice_holders()
+        _loop
+                expected_result << p_expected_tray[i_holder]
+                _if expected_result _is _unset _orif
+                    expected_result.empty?                
+                _then
+                       _self.assert_true(p_tray.fiber_pins.empty?,
+                                         write_string("Expected tray pos '", i_holder.number,
+                                                      "' in tray '", p_tray.name,
+                                                      "' in splice '", p_tray.sheath_splice.name,
+                                                      "' to be empty."))
+                _else
+                        objects << i_holder.contained_objects()
+                        objects_desc << objects.
+                                        map(_proc(a)>>a.trace_desc();_endproc).as_simple_vector().join_as_strings("/")
+                        _self.assert_true(expected_result.includes_all?(objects),
+                                          write_string("Expected tray pos '", i_holder.number,
+                                                      "' in tray '", p_tray.name,
+                                                      "' in splice '", p_tray.sheath_splice.name,
+                                                      "' to contain certain pins, but got '",
+                                                      objects_desc, "'."))
+                _endif
+        _endloop
+_endmethod
+$
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!tray_loader_tests.then_reserves_are_marked(sheaths, fibers)
+        ## 
+        ## Check that for the given run of sheaths (P_SHEATHS) the
+        ## given fibers (P_FIBERS) are marked as reserved, by setting
+        ## the fiber attribute to 'Reserved'.
+
+        _return _self
+_endmethod
+$
+
+
+
+
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!tray_loader_tests.get(name)
+        ## 
+        ## 
+	_return .builder.get(name)
+_endmethod
+$
+_pragma(classify_level=basic, topic=mpff!test)
+_method mpff!tray_loader_tests.clear_state()
+
+        _self.builder_state.empty()
+_endmethod
+$
+

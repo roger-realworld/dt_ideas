@@ -1,0 +1,156 @@
+#% text_encoding = iso8859_1
+##--------------------------------------------------------------
+##
+##           D E U T S C H E   T E L E K O M   A G
+##
+##     Datum der Erstellung : 01.08.2018
+##     Realisierer          : Deutsche Telekom IT GmbH
+##     Ersteller            : Roger Fretwell
+##     Projekt              : FTTH Factory
+##
+##
+##     Copyright (C) Deutsche Telekom AG , all rights reserved.
+##-------------------------------------------------------------------------
+## FTTH Factory: Building blocks for creating test network. 
+##
+## Prerequisities: 
+##-------------------------------------------------------------------------
+
+_package sw
+
+_pragma(classify_level=restricted, topic=mpff!pfc_custom)
+def_slotted_exemplar(:mpff!reserves_loader,
+	## 
+	## 
+	## 
+	{
+	},
+	{})
+$
+
+_pragma(classify_level=restricted, topic=mpff!pfc_custom)
+_method mpff!reserves_loader.new()
+
+        _return _clone.init()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic=mpff!pfc_custom)
+_method mpff!reserves_loader.init()
+        ## 
+        ##
+        _return _self
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic=mpff!pfc_custom)
+_method mpff!reserves_loader.mpff!connect_reserves(p_trace_tree)
+
+        max_leaf << _self.int!find_furthest_splice(p_trace_tree)
+        max << _self.int!find_max_used_fiber(max_leaf)
+        _self.int!find_reserves(max_leaf)
+        
+        write("c1:",max_leaf)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic=mpff!pfc_custom)
+_method mpff!reserves_loader.int!find_furthest_splice(p_trace_tree)
+        ## 
+        ##
+        _local len0 << length_value.new(0, :m)
+        _local max << len0
+        _for i_leaf _over p_trace_tree.leaves()
+        _loop
+                length << i_leaf.branch_to_root.
+                          reduce(_proc(sum, a) _import len0;>>sum+a.value.default(len0);_endproc, len0)
+                _if length > max
+                _then
+                        max << length
+                        max_leaf << i_leaf                        
+                _endif
+        _endloop
+        _return max_leaf
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic=mpff!pfc_custom)
+_method mpff!reserves_loader.int!find_max_used_fiber(p_leaf)
+
+        splices << p_leaf.branch_to_root.map(_proc(a) >> a.key _endproc)
+        sheaths << splices.map(_proc(a) >> a.get_upstream_cables().an_element() _endproc)
+        # The last sheath is unset - by definition
+        sheaths.remove_last()
+        pin1 << sheaths.last.get_end_pin()
+        max << 0
+        _for i _over pin1.all_low_level_traceable_items.fast_elements()
+        _loop
+                j << i.act_high
+                _if j > max _andif
+                    i.already_connected?()
+                _then
+                        max << j
+                _endif
+        _endloop
+        _return max
+_endmethod
+$
+
+        
+_pragma(classify_level=restricted, topic=mpff!pfc_custom)
+_method mpff!reserves_loader.int!reserve_fiber(p_leaf, max)
+        splices << p_leaf.branch_to_root.map(_proc(a) >> a.key _endproc)
+        sheaths << splices.map(_proc(a) >> a.get_upstream_cables().an_element() _endproc).
+                   read_stream()
+
+        out_sheath << sheaths.get()
+
+        _loop
+                _if (in_sheath << sheaths.get()) _is _unset
+                _then
+                        _leave
+                _endif
+
+                _self.int!connect_fiber(in_sheath, out_sheath)
+                out_sheath << in_sheath
+        _endloop
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic=mpff!pfc_custom)
+_method mpff!reserves_loader.int!connect_fiber(in_sheath, out_sheath, max)
+
+        in_pin << _self.int!get_pin(in_sheath.get_end_pin(), max)
+        out_pin << _self.int!get_pin(out_sheath.get_start_pin(), max)
+
+        in_pin.connect_to(out_pin)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic=mpff!pfc_custom)
+_method mpff!reserves_loader.int!get_pin(p_top_pin, max)
+
+        _local l_top_pseudo_pins << p_top_pin.next_level_pins(_unset, _true)
+        _local from << max+1
+        _local to << p_top_pin.sheath_with_loc.get_size()
+        
+	_for a_top_pp _over l_top_pseudo_pins.fast_elements()
+	_loop
+		_if a_top_pp.act_low <= from _andif
+		    a_top_pp.act_high >= to
+		_then 
+			l_new_port <<
+				p_top_pin.pseudo_pin_class.new(a_top_pp.mcn!cable_pin,
+							       a_top_pp.cloc,
+							       a_top_pp.low_end + (from - a_top_pp.act_low),
+							       a_top_pp.high_end - (a_top_pp.act_high - to),
+							       a_top_pp.physical?)
+			_leave
+		_endif
+	_finally
+		sw:condition.raise(:error, :string, write_string("LOC containing connection range: ", from, "-", to, " not found for ", p_top_pin.owner))
+	_endloop
+
+        _return l_new_port
+_endmethod
+$
